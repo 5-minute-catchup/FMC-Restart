@@ -1,14 +1,15 @@
-var express = require('express')
-var passport = require('passport')
-var util = require('util')
-var FacebookStrategy = require('passport-facebook').Strategy
-var logger = require('morgan')
-var session = require('express-session')
+var express = require('express');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
+var util = require('util');
+var logger = require('morgan');
+var session = require('express-session');
 var sessionStore = require('sessionstore');
-var bodyParser = require("body-parser")
+var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser")
 var methodOverride = require('method-override');
-var port = process.env.PORT || 3000
+var port = process.env.PORT || 3000;
 var io = require('socket.io')(http);
 var http = require('http').Server(app);
 var markers = [];
@@ -16,12 +17,12 @@ var server = require('http').createServer(app);
 var passportStrategy = require('../utils/passport-strategy');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
+var config = require('./oauth.js');
+var mongoose = require('mongoose');
 
-var FACEBOOK_APP_ID = "653014024831372";
-var FACEBOOK_APP_SECRET = "8f7186268d5d2f58856d95c657266f96";
+// Facebook authentication start
 
-passport.use(passportStrategy.facebook);
-
+// serialize and deserialize
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
@@ -30,81 +31,72 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-var sessionData = session({
-  store: sessionStore.createSessionStore(),
-  secret: "your_secret",
-  cookie: { maxAge: 2628000000 },
-  resave: true,
-  saveUninitialized: true
-});
-
+// config
 passport.use(new FacebookStrategy({
-    clientID: FACEBOOK_APP_ID,
-    clientSecret: FACEBOOK_APP_SECRET,
-    callbackURL: "http://localhost:3000/auth/facebook/callback"
+  clientID: config.facebook.clientID,
+  clientSecret: config.facebook.clientSecret,
+  callbackURL: config.facebook.callbackURL
   },
   function(accessToken, refreshToken, profile, done) {
-
-    process.nextTick(function () {
-      
-      return done(null, profile);
-    });
+   process.nextTick(function () {
+     return done(null, profile);
+   });
   }
 ));
 
 var app = express();
 
+app.configure(function() {
   app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
-  app.use(sessionData);
-  app.use(logger("combined"));
-  app.use(cookieParser());
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({
-    extended: true
-  }));
-  app.use(methodOverride());
-  app.use(session({
-      secret: "keyboard cat",
-      saveUninitialized: true, // (default: true)
-      resave: true, // (default: true)
-    }));
+  app.set('view engine', 'jade');
+  app.use(express.logger());
+  app.use(express.cookieParser());
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.session({ secret: 'my_precious' }));
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(app.router);
   app.use(express.static(__dirname + '/public'));
-
-app.get('/', function(req, res){
-  res.render('index', { user: req.user });
 });
 
+// routes
+app.get('/', routes.index);
+app.get('/ping', routes.ping);
 app.get('/account', ensureAuthenticated, function(req, res){
   res.render('account', { user: req.user });
 });
 
-app.get('/login', function(req, res){
+app.get('/', function(req, res){
   res.render('login', { user: req.user });
 });
 
 app.get('/auth/facebook',
-  passport.authenticate('facebook'),
-  function(req, res){
-  });
+passport.authenticate('facebook'),
+function(req, res){
+});
 
-app.get('/auth/facebook/callback', 
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
-  function(req, res) {
-    res.redirect('/');
-  });
+app.get('/auth/facebook/callback',
+passport.authenticate('facebook', { failureRedirect: '/' }),
+function(req, res) {
+ res.redirect('/account');
+});
 
 app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
 });
 
-app.get('/mapjs', function(req, res){
-  res.sendFile(__dirname + '/public/map.js');
-});
+// port
+app.listen(1337);
 
+// test authentication
+function ensureAuthenticated(req, res, next) {
+if (req.isAuthenticated()) { return next(); }
+res.redirect('/')
+}
+
+// Facebook authentication end
 
 // Socket markers start
 
@@ -130,10 +122,5 @@ app.listen(port, function(){
 });
 
 // socket markers end
-
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/login')
-}
 
 module.exports = server;
