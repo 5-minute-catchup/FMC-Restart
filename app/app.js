@@ -17,7 +17,7 @@ var server = require('http').createServer(app);
 var passportStrategy = require('../utils/passport-strategy');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
-var config = require('./oauth.js');
+var config = require('../oauth.js');
 var mongoose = require('mongoose');
 
 // Facebook authentication start
