@@ -2,7 +2,9 @@
   "use strict";
   var map;
   var markers = [];
-  var socket = io();
+  var socket = io.connect('http://localhost:3000');
+
+  console.log('jories');
 
   function initialize() {
     var mapOptions = {

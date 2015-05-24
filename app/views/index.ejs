@@ -21,9 +21,9 @@
     <![endif]-->
 
     <!-- navigation -->
-    
+
    <!-- Navigation End -->
-   
+
 
   <% if(!user) { %>
   <div class="header">
@@ -81,12 +81,12 @@
       </div>
 
         <h2>Hello, <%= user.displayName %></h2>
-    <div id="map-canvas"></div>
+        <div id="map-canvas"></div>
       <% } %>
 
 
 
-      
+
     <div class="footer">
       <div class="container">
         <p><span class="glyphicon glyphicon-heart"></span> from the Five Minute Catchup team</p>
@@ -94,25 +94,13 @@
     </div>
 
 
-   
 
-        
-        
-        // <!-- <script src="public/map.js"></script> -->
-     
-        <!-- socket scripts -->
-        <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+
+
+
+
+      <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
       <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-      <script src="/mapjs"></script>
-      // <script>
-        var socket = io();
-        //Listen for other users markers
-        socket.on('show-marker', function(data) {
-          console.log(data);
-          var loc = new google.maps.LatLng(data.lat,
-                                         data.lng);
-          addMarker(loc, data.socketId);
-        });
-      // </script>
+      <script src="/app/public/map.js"></script>
 </body>
 </html>
