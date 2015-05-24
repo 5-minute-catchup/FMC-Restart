@@ -1,5 +1,4 @@
 var FacebookStrategy = require('passport-facebook').Strategy;
-
 var strategy = {};
 
 strategy.facebook = new FacebookStrategy({
