@@ -12,6 +12,7 @@
     "jade": "^1.9.2",
     "method-override": "^2.3.3",
     "mongodb": "*",
+    "mongojs": "^0.18.2",
     "mongoose": "^4.0.3",
     "morgan": "^1.5.3",
     "passport": "^0.2.2",
